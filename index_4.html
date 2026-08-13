@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Три в ряд — игра на удачу</title>
+<style>
+  :root {
+    --bg: #14171f;
+    --bg-panel: #1c2130;
+    --gold: #e8b95c;
+    --gold-dim: #a9834a;
+    --text: #f2ede2;
+    --text-dim: #8b91a5;
+    --win: #6fcf97;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    margin: 0;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 50% 20%, #1a1f2e 0%, var(--bg) 70%);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    color: var(--text);
+    padding: clamp(10px, 3vh, 24px) clamp(12px, 4vw, 24px);
+  }
+
+  .table {
+    width: 100%;
+    max-width: 520px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .eyebrow {
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    font-size: clamp(9px, 1.6vh, 12px);
+    color: var(--gold-dim);
+    margin-bottom: clamp(4px, 1vh, 8px);
+    font-family: Verdana, sans-serif;
+  }
+
+  h1 {
+    font-size: clamp(22px, 5vh, 34px);
+    margin: 0 0 clamp(3px, 1vh, 6px);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: clamp(12px, 2.2vh, 15px);
+    margin-bottom: clamp(14px, 4vh, 36px);
+    font-family: Verdana, sans-serif;
+  }
+
+  .cards {
+    display: flex;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 16px);
+    margin-bottom: clamp(14px, 3.5vh, 32px);
+  }
+
+  .card {
+    width: clamp(64px, 16vh, 96px);
+    height: clamp(88px, 22vh, 132px);
+    background: var(--bg-panel);
+    border: 1px solid #2c3244;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(28px, 6vh, 46px);
+    transition: transform 0.15s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card.spinning {
+    animation: shake 0.12s infinite;
+  }
+
+  .card.win {
+    border-color: var(--win);
+    box-shadow: 0 0 24px rgba(111, 207, 151, 0.35);
+  }
+
+  @keyframes shake {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-4px); }
+    100% { transform: translateY(0); }
+  }
+
+  button {
+    font-family: Verdana, sans-serif;
+    font-size: clamp(12px, 2vh, 15px);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--gold);
+    color: #1a1508;
+    border: none;
+    padding: clamp(10px, 1.8vh, 14px) clamp(24px, 6vw, 40px);
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s ease, background 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  button:hover { background: #f0c774; }
+  button:active { transform: scale(0.97); }
+  button:disabled {
+    background: #444a5c;
+    color: #8b91a5;
+    cursor: default;
+  }
+
+  .status {
+    margin-top: clamp(10px, 2.2vh, 22px);
+    min-height: 20px;
+    font-family: Verdana, sans-serif;
+    font-size: clamp(12px, 2vh, 15px);
+    color: var(--text-dim);
+  }
+
+  .status.win-text {
+    color: var(--win);
+    font-weight: bold;
+  }
+
+  .score {
+    margin-top: clamp(10px, 2.5vh, 28px);
+    display: flex;
+    justify-content: center;
+    gap: clamp(16px, 4vw, 28px);
+    font-family: Verdana, sans-serif;
+    font-size: clamp(10px, 1.6vh, 12px);
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .score b {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: clamp(15px, 3vh, 20px);
+    color: var(--text);
+    letter-spacing: 0;
+    margin-top: 2px;
+  }
+
+  .symbols {
+    margin-top: clamp(10px, 2.5vh, 28px);
+    padding-top: clamp(8px, 1.8vh, 20px);
+    border-top: 1px solid #2c3244;
+    width: 100%;
+  }
+
+  .symbols-label {
+    font-family: Verdana, sans-serif;
+    font-size: clamp(9px, 1.5vh, 11px);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: clamp(6px, 1.5vh, 12px);
+  }
+
+  .symbols-list {
+    display: flex;
+    justify-content: center;
+    gap: clamp(8px, 2vw, 14px);
+    font-size: clamp(16px, 3vh, 26px);
+  }
+
+  .symbols-list span {
+    width: clamp(32px, 6vh, 44px);
+    height: clamp(32px, 6vh, 44px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-panel);
+    border: 1px solid #2c3244;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="table">
+  <div class="eyebrow">Игра на удачу</div>
+  <h1>Три в ряд</h1>
+  <div class="subtitle">Собери три одинаковые карты — и победа твоя</div>
+
+  <div class="cards">
+    <div class="card" id="card0">🍒</div>
+    <div class="card" id="card1">🍋</div>
+    <div class="card" id="card2">🍇</div>
+  </div>
+
+  <button id="spinBtn">Крутить</button>
+
+  <div class="status" id="status">Нажми «Крутить», чтобы начать</div>
+
+  <div class="score">
+    <div>Попытки<b id="tries">0</b></div>
+    <div>Победы<b id="wins">0</b></div>
+  </div>
+
+  <div class="symbols">
+    <div class="symbols-label">Доступные карты</div>
+    <div class="symbols-list" id="symbolsList"></div>
+  </div>
+</div>
+
+<script>
+  const SYMBOLS = ['🍒', '🍋', '🍇', '⭐', '🔔'];
+  const WIN_CHANCE = 0.2; // шанс победы фиксирован и не зависит от количества символов
+  const cards = [document.getElementById('card0'), document.getElementById('card1'), document.getElementById('card2')];
+  const btn = document.getElementById('spinBtn');
+  const status = document.getElementById('status');
+  const triesEl = document.getElementById('tries');
+  const winsEl = document.getElementById('wins');
+  const symbolsListEl = document.getElementById('symbolsList');
+
+  let tries = 0;
+  let wins = 0;
+
+  // выводим на экран список всех символов, которые могут выпасть
+  symbolsListEl.innerHTML = SYMBOLS.map(s => `<span>${s}</span>`).join('');
+
+  function randomSymbol() {
+    return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+  }
+
+  // строит итог раунда: сначала решаем, победа это или нет (с фиксированной
+  // вероятностью WIN_CHANCE), и только потом подбираем символы под этот исход
+  function buildResult() {
+    const isWin = Math.random() < WIN_CHANCE;
+
+    if (isWin) {
+      const symbol = randomSymbol();
+      return { result: [symbol, symbol, symbol], isWin: true };
+    }
+
+    // проигрыш: подбираем три символа так, чтобы они не совпали все разом
+    let result;
+    do {
+      result = [randomSymbol(), randomSymbol(), randomSymbol()];
+    } while (result[0] === result[1] && result[1] === result[2]);
+
+    return { result, isWin: false };
+  }
+
+  function spin() {
+    btn.disabled = true;
+    status.textContent = 'Крутим...';
+    status.classList.remove('win-text');
+    cards.forEach(c => {
+      c.classList.remove('win');
+      c.classList.add('spinning');
+    });
+
+    // имитация вращения барабана
+    let ticks = 0;
+    const spinInterval = setInterval(() => {
+      cards.forEach(c => c.textContent = randomSymbol());
+      ticks++;
+      if (ticks > 10) {
+        clearInterval(spinInterval);
+        finishSpin();
+      }
+    }, 80);
+  }
+
+  function finishSpin() {
+    const { result, isWin } = buildResult();
+    cards.forEach((c, i) => {
+      c.textContent = result[i];
+      c.classList.remove('spinning');
+    });
+
+    tries++;
+    triesEl.textContent = tries;
+
+    if (isWin) {
+      wins++;
+      winsEl.textContent = wins;
+      cards.forEach(c => c.classList.add('win'));
+      status.textContent = '🎉 Победа! Три одинаковые карты!';
+      status.classList.add('win-text');
+    } else {
+      status.textContent = 'Не повезло — попробуй ещё раз';
+    }
+
+    btn.disabled = false;
+  }
+
+  btn.addEventListener('click', spin);
+</script>
+
+</body>
+</html>
